@@ -7,8 +7,8 @@ import ru.kata.spring.boot_security.demo.models.Role;
 import ru.kata.spring.boot_security.demo.models.User;
 import ru.kata.spring.boot_security.demo.repositories.RoleRepository;
 import ru.kata.spring.boot_security.demo.repositories.UserRepository;
-import java.util.Optional;
 
+import java.util.Optional;
 
 @Service
 public class RegistrationService {
@@ -27,7 +27,7 @@ public class RegistrationService {
 
     public void register(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        Optional<Role> role = roleRepository.findByRole("ROLE_USER");
+        Optional<Role> role = roleRepository.findByRoleName("ROLE_USER");
         if (role.isPresent()) {
             user.getRoles().add(role.get());
         } else {
