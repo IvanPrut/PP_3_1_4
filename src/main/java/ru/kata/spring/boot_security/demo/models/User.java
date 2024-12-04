@@ -1,8 +1,8 @@
 package ru.kata.spring.boot_security.demo.models;
 
-
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
@@ -13,13 +13,14 @@ import java.util.*;
 @Entity
 @Table(name = "users")
 public class User implements UserDetails {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotEmpty(message = "Username cannot be empty")
     @Size(min = 2, max = 15, message = "Name should be between 2 and 15 latin characters")
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String username;
 
     @Pattern(regexp = "[A-Za-z]{2,15}", message = "Name should be between 2 and 15 latin characters")
@@ -29,24 +30,24 @@ public class User implements UserDetails {
     private String surname;
 
     @Email
+    @Column(unique = true, nullable = false)
     private String email;
 
     @NotEmpty(message = "Password cannot be empty")
     @Size(min = 4, message = "Password should be greater than 4 symbols")
     private String password;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
-    private Set<Roles> roles;
-
+    private Set<Role> roles = new HashSet<>();
 
     public User() {
 
     }
 
-    public User(String username, String name, String surname, String email, String password, Set<Roles> roles) {
+    public User(String username, String name, String surname, String email, String password, Set<Role> roles) {
         this.username = username;
         this.name = name;
         this.surname = surname;
@@ -105,11 +106,11 @@ public class User implements UserDetails {
         this.password = password;
     }
 
-    public Set<Roles> getRoles() {
+    public Set<Role> getRoles() {
         return roles;
     }
 
-    public void setRoles(Set<Roles> roles) {
+    public void setRoles(Set<Role> roles) {
         this.roles = roles;
     }
 
