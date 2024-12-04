@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Edit user</title>
+</head>
+<body>
+<form th:action="@{/admin/user/{id}/edit (id=${user.id})}" th:object="${user}" th:method="PATCH">
+
+  <label for="username">Введите username: </label>
+  <input th:field="*{username}" type="text" id="username" name="username" placeholder="Username"/>
+  <div style="color: red" th:if="${#fields.hasErrors('username')}" th:errors="*{username}">Username Error</div>
+  <br/>
+
+  <label for="password">Введите пароль: </label>
+  <input th:field="*{password}" type="password" id="password" name="password" placeholder="Password"/>
+  <div style="color: red" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Password Error</div>
+  <br/>
+
+  <label for="email">Введите Email: </label>
+  <input th:field="*{email}" type="email" id="email" name="email" placeholder="Email"/>
+  <div style="color: red" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Email Error</div>
+  <br/>
+
+  <label for="name">Введите имя: </label>
+  <input th:field="*{name}" type="text" id="name" name="name" placeholder="Name"/>
+  <div style="color: red" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Name Error</div>
+  <br/>
+
+  <label for="surname">Введите фамилию: </label>
+  <input th:field="*{surname}" type="text" id="surname" name="surname" placeholder="Surname"/>
+  <div style="color: red" th:if="${#fields.hasErrors('surname')}" th:errors="*{surname}">Surname Error</div>
+  <br/>
+
+  <label for="roles">Выберите роли: </label>
+  <select id="roles" name="roles" multiple th:field="*{roles}">
+    <option th:each="role : ${allRoles}"
+            th:value="${role.id}"
+            th:text="${role.roleName}">
+    </option>
+  </select>
+  <br/>
+
+  <input type="submit" value="Edit User"/>
+
+</form>
+</body>
+</html>
