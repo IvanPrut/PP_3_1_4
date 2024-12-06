@@ -9,30 +9,36 @@ import ru.kata.spring.boot_security.demo.repositories.RoleRepository;
 import ru.kata.spring.boot_security.demo.repositories.UserRepository;
 
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
-public class RegistrationService {
+public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
 
     @Autowired
-    public RegistrationService(UserRepository userRepository, PasswordEncoder passwordEncoder,
-                               RoleRepository roleRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
+                       RoleRepository roleRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.roleRepository = roleRepository;
     }
 
-    public void register(User user) {
+    public void prepareAndSafe(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        Optional<Role> role = roleRepository.findByRoleName("ROLE_USER");
-        if (role.isPresent()) {
-            user.getRoles().add(role.get());
-        } else {
-            System.out.println("Role not found");
-        }
-        userRepository.save(user);
+        userRepository.save(installRoles(user));
+    }
+
+    private User installRoles(User user) {
+        Set<Role> roles = user.getRoleNames().stream()
+                .map(roleRepository::findByRoleName)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toSet());
+        user.setRoles(roles);
+        return user;
     }
 }
