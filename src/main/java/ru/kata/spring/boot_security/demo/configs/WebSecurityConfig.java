@@ -9,51 +9,45 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import ru.kata.spring.boot_security.demo.service.UserCurrentDetailsService;
+import ru.kata.spring.boot_security.demo.service.PersonDetailsService;
 
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final SuccessUserHandler successUserHandler;
-    private final UserCurrentDetailsService userCurrentDetailsService;
-    private static final String LOGIN = "/auth/login";
+    private final PersonDetailsService personDetailsService;
+    private static final String LOGIN = "/";
 
     @Autowired
     public WebSecurityConfig(SuccessUserHandler successUserHandler,
-                             UserCurrentDetailsService userCurrentDetailsService) {
+                             PersonDetailsService personDetailsService) {
         this.successUserHandler = successUserHandler;
-        this.userCurrentDetailsService = userCurrentDetailsService;
-    }
-
-    public WebSecurityConfig(boolean disableDefaults, SuccessUserHandler successUserHandler, UserCurrentDetailsService userCurrentDetailsService) {
-        super(disableDefaults);
-        this.successUserHandler = successUserHandler;
-        this.userCurrentDetailsService = userCurrentDetailsService;
+        this.personDetailsService = personDetailsService;
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .authorizeRequests()
-                .antMatchers("/admin/**", "/admin").hasRole("ADMIN")
-                .antMatchers(LOGIN, "/auth/registration").anonymous()
-                .antMatchers("error").permitAll()
+                .antMatchers("/admin").hasAuthority("ADMIN")
+                .antMatchers(LOGIN).anonymous()
+                .antMatchers("/error").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .formLogin().loginPage(LOGIN)
                 .loginProcessingUrl("/process_login")
-                .failureUrl("/auth/login?error=true")
+                .failureUrl(LOGIN + "?error")
                 .successHandler(successUserHandler)
                 .permitAll()
                 .and()
-                .logout().logoutUrl("/auth/logout").logoutSuccessUrl(LOGIN)
+                .logout().logoutUrl("/logout").logoutSuccessUrl(LOGIN)
                 .permitAll();
     }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userCurrentDetailsService).passwordEncoder(getPasswordEncoder());
+        auth.userDetailsService(personDetailsService).passwordEncoder(getPasswordEncoder());
     }
 
     @Bean
