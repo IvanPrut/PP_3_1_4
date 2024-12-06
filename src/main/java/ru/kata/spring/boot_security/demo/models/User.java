@@ -1,33 +1,26 @@
 package ru.kata.spring.boot_security.demo.models;
 
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-
 import javax.persistence.*;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 import java.util.*;
 
 @Entity
 @Table(name = "users")
-public class User implements UserDetails {
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotEmpty(message = "Username cannot be empty")
-    @Size(min = 2, max = 15, message = "Name should be between 2 and 15 latin characters")
-    @Column(unique = true, nullable = false)
-    private String username;
-
-    @Pattern(regexp = "[A-Za-z]{2,15}", message = "Name should be between 2 and 15 latin characters")
+    @Pattern(regexp = "\\p{L}{2,30}", message = "Name should be between 2 and 30 characters")
     private String name;
 
-    @Pattern(regexp = "[A-Za-z]{2,15}", message = "Name should be between 2 and 15 latin characters")
-    private String surname;
+    @Pattern(regexp = "\\p{L}{2,30}", message = "Last Name should be between 2 and 30 characters")
+    private String lastName;
+
+    @Min(value = 0, message = "Age cannot be negative")
+    @Column(nullable = false)
+    private int age;
 
     @Email
     @Column(unique = true, nullable = false)
@@ -36,6 +29,17 @@ public class User implements UserDetails {
     @NotEmpty(message = "Password cannot be empty")
     @Size(min = 4, message = "Password should be greater than 4 symbols")
     private String password;
+
+    public Set<String> getRoleNames() {
+        return roleNames;
+    }
+
+    public void setRoleNames(Set<String> roleNames) {
+        this.roleNames = roleNames;
+    }
+
+    @Transient
+    private Set<String> roleNames = new HashSet<>();
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(name = "users_roles",
@@ -47,13 +51,12 @@ public class User implements UserDetails {
 
     }
 
-    public User(String username, String name, String surname, String email, String password, Set<Role> roles) {
-        this.username = username;
+    public User(String name, String lastName, int age, String email, String password) {
         this.name = name;
-        this.surname = surname;
+        this.lastName = lastName;
+        this.age = age;
         this.email = email;
         this.password = password;
-        this.roles = roles;
     }
 
     public Long getId() {
@@ -64,45 +67,49 @@ public class User implements UserDetails {
         this.id = id;
     }
 
-    @Override
-    public String getUsername() {
-        return username;
-    }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getName() {
+    public @Pattern(regexp = "\\p{L}{2,30}", message = "Name should be between 2 and 30 characters") String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(@Pattern(regexp = "\\p{L}{2,30}", message = "Name should be between 2 and 30 characters")
+                        String name) {
         this.name = name;
     }
 
-    public String getSurname() {
-        return surname;
+    public @Pattern(regexp = "\\p{L}{2,30}", message = "Last Name should be between 2 and 30 characters")
+    String getLastName() {
+        return lastName;
     }
 
-    public void setSurname(String surname) {
-        this.surname = surname;
+    public void setLastName(@Pattern(regexp = "\\p{L}{2,30}",
+            message = "Last Name should be between 2 and 30 characters") String lastName) {
+        this.lastName = lastName;
     }
 
-    public String getEmail() {
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    public @Email String getEmail() {
         return email;
     }
 
-    public void setEmail(String email) {
+    public void setEmail(@Email String email) {
         this.email = email;
     }
 
-    @Override
-    public String getPassword() {
+    public @NotEmpty(message = "Password cannot be empty") @Size(min = 4,
+            message = "Password should be greater than 4 symbols") String getPassword() {
         return password;
     }
 
-    public void setPassword(String password) {
+    public void setPassword(@NotEmpty(message = "Password cannot be empty") @Size(min = 4,
+            message = "Password should be greater than 4 symbols") String password) {
         this.password = password;
     }
 
@@ -126,29 +133,5 @@ public class User implements UserDetails {
     public int hashCode() {
         return Objects.hashCode(id);
     }
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return new ArrayList<>(this.roles);
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
 }
+
