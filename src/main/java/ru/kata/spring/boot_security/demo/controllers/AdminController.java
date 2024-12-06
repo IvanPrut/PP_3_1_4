@@ -1,6 +1,8 @@
 package ru.kata.spring.boot_security.demo.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -8,10 +10,11 @@ import org.springframework.web.bind.annotation.*;
 import ru.kata.spring.boot_security.demo.models.User;
 import ru.kata.spring.boot_security.demo.repositories.RoleRepository;
 import ru.kata.spring.boot_security.demo.repositories.UserRepository;
-import ru.kata.spring.boot_security.demo.service.EditUserService;
+import ru.kata.spring.boot_security.demo.security.PersonDetails;
+import ru.kata.spring.boot_security.demo.service.UserService;
+import ru.kata.spring.boot_security.demo.util.UserValidator;
 
 import javax.validation.Valid;
-import java.util.Optional;
 
 @Controller
 @RequestMapping("/admin")
@@ -19,62 +22,51 @@ public class AdminController {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
-    private final EditUserService editUserService;
+    private final UserValidator userValidator;
+    private final UserService userService;
     private static final String ERROR = "/error";
+    private static final String ADMIN_REDIRECT = "redirect:/admin";
 
     @Autowired
     public AdminController(UserRepository userRepository, RoleRepository roleRepository,
-                           EditUserService editUserService) {
+                            UserValidator userValidator, UserService userService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
-        this.editUserService = editUserService;
+        this.userValidator = userValidator;
+        this.userService = userService;
     }
 
     @GetMapping()
     public String admin(Model model) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            PersonDetails personDetails = (PersonDetails) authentication.getPrincipal();
+            model.addAttribute("user", personDetails.getUserObj());
+        } else return ERROR;
         model.addAttribute("users", userRepository.findAll());
-        return "admin/users";
+        model.addAttribute("allRoles", roleRepository.findAll());
+        return "admin/admin";
     }
 
-    @GetMapping("/user/{id}")
-    public String getUser(@PathVariable("id") Long id, Model model) {
-        Optional<User> user = userRepository.findById(id);
-        if (user.isPresent()) {
-            model.addAttribute("user", user.get());
-            return "admin/user";
-        } else {
-            return ERROR;
-        }
+    @PatchMapping("/users/{id}")
+    public String userEdit(@ModelAttribute User user) {
+        userService.prepareAndSafe(user);
+        return ADMIN_REDIRECT;
     }
 
-    @DeleteMapping("/user/{id}")
-    public String deleteUser(@PathVariable("id") Long id) {
-        Optional<User> user = userRepository.findById(id);
-        if (user.isPresent()) {
-            userRepository.delete(user.get());
-            return "redirect:/admin";
-        }
-        return ERROR;
+    @DeleteMapping("/users/{id}")
+    public String userDelete (@PathVariable long id) {
+        userRepository.deleteById(id);
+        return ADMIN_REDIRECT;
     }
 
-    @GetMapping("/user/{id}/edit")
-    public String giveEditUser(@PathVariable("id") Long id, Model model) {
-        Optional<User> user = userRepository.findById(id);
-        if (user.isPresent()) {
-            model.addAttribute("user", user.get());
-            model.addAttribute("allRoles", roleRepository.findAll());
-            return "admin/edit";
-        }
-        return ERROR;
-    }
-
-    @PatchMapping("/user/{id}/edit")
-    public String editUser(@ModelAttribute("user") @Valid User user, BindingResult bindingResult, Model model) {
+    @PostMapping("/users")
+    public String userAdd(@ModelAttribute("user") @Valid User user, BindingResult bindingResult) {
+        userValidator.validate(user, bindingResult);
         if (bindingResult.hasErrors()) {
-            model.addAttribute("allRoles", roleRepository.findAll());
-            return "admin/edit";
+            return "service/error";
         }
-        editUserService.editUser(user);
-        return "redirect:/admin";
+        userService.prepareAndSafe(user);
+        return ADMIN_REDIRECT;
     }
 }
