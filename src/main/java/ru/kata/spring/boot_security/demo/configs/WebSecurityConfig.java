@@ -15,27 +15,28 @@ import ru.kata.spring.boot_security.demo.service.PersonDetailsService;
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
-    private final SuccessUserHandler successUserHandler;
     private final PersonDetailsService personDetailsService;
-    private static final String LOGIN = "/";
+    private final SuccessUserHandler successUserHandler;
+    private static final String LOGIN = "/login";
 
     @Autowired
-    public WebSecurityConfig(SuccessUserHandler successUserHandler,
-                             PersonDetailsService personDetailsService) {
-        this.successUserHandler = successUserHandler;
+    public WebSecurityConfig(PersonDetailsService personDetailsService, SuccessUserHandler successUserHandler) {
         this.personDetailsService = personDetailsService;
+        this.successUserHandler = successUserHandler;
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .authorizeRequests()
-                .antMatchers("/admin").hasAuthority("ADMIN")
-                .antMatchers(LOGIN).anonymous()
+                .antMatchers("/api/admin").hasAuthority("ADMIN")
+                .antMatchers(LOGIN).permitAll()
                 .antMatchers("/error").permitAll()
                 .anyRequest().authenticated()
                 .and()
-                .formLogin().loginPage(LOGIN)
+                .formLogin()
+                .loginPage(LOGIN)
+                .usernameParameter("email")
                 .loginProcessingUrl("/process_login")
                 .failureUrl(LOGIN + "?error")
                 .successHandler(successUserHandler)
