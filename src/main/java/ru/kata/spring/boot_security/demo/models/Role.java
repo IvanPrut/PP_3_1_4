@@ -7,7 +7,6 @@ import java.util.Objects;
 import java.util.Set;
 
 @Entity
-@Table(name = "role")
 public class Role implements GrantedAuthority {
 
     @Id
@@ -61,7 +60,7 @@ public class Role implements GrantedAuthority {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(id);
+        return (id != null) ? id.hashCode() : 0;
     }
 
     @Override
