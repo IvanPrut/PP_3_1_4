@@ -6,13 +6,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class ServiceController {
 
-    @GetMapping()
+    @GetMapping("/login")
     public String getLoginPage() {
-        return "service/login";
+        return "login";
     }
 
-    @GetMapping("/error")
-    public String getErrorPage() {
-        return "service/error";
+    @GetMapping()
+    public String getIndexPage() {
+        return "index";
     }
 }
