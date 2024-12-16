@@ -26,17 +26,8 @@ public class User {
     @Column(unique = true, nullable = false)
     private String email;
 
-    @NotEmpty(message = "Password cannot be empty")
     @Size(min = 4, message = "Password should be greater than 4 symbols")
     private String password;
-
-    public Set<String> getRoleNames() {
-        return roleNames;
-    }
-
-    public void setRoleNames(Set<String> roleNames) {
-        this.roleNames = roleNames;
-    }
 
     @Transient
     private Set<String> roleNames = new HashSet<>();
@@ -59,6 +50,14 @@ public class User {
         this.password = password;
     }
 
+    public Set<String> getRoleNames() {
+        return roleNames;
+    }
+
+    public void setRoleNames(Set<String> roleNames) {
+        this.roleNames = roleNames;
+    }
+
     public Long getId() {
         return id;
     }
@@ -67,23 +66,19 @@ public class User {
         this.id = id;
     }
 
-
-    public @Pattern(regexp = "\\p{L}{2,30}", message = "Name should be between 2 and 30 characters") String getName() {
+    public String getName() {
         return name;
     }
 
-    public void setName(@Pattern(regexp = "\\p{L}{2,30}", message = "Name should be between 2 and 30 characters")
-                        String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
-    public @Pattern(regexp = "\\p{L}{2,30}", message = "Last Name should be between 2 and 30 characters")
-    String getLastName() {
+    public String getLastName() {
         return lastName;
     }
 
-    public void setLastName(@Pattern(regexp = "\\p{L}{2,30}",
-            message = "Last Name should be between 2 and 30 characters") String lastName) {
+    public void setLastName(String lastName) {
         this.lastName = lastName;
     }
 
@@ -95,21 +90,19 @@ public class User {
         this.age = age;
     }
 
-    public @Email String getEmail() {
+    public String getEmail() {
         return email;
     }
 
-    public void setEmail(@Email String email) {
+    public void setEmail(String email) {
         this.email = email;
     }
 
-    public @NotEmpty(message = "Password cannot be empty") @Size(min = 4,
-            message = "Password should be greater than 4 symbols") String getPassword() {
+    public String getPassword() {
         return password;
     }
 
-    public void setPassword(@NotEmpty(message = "Password cannot be empty") @Size(min = 4,
-            message = "Password should be greater than 4 symbols") String password) {
+    public void setPassword(String password) {
         this.password = password;
     }
 
@@ -131,7 +124,7 @@ public class User {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(id);
+        return (id != null) ? id.hashCode() : 0;
     }
 }
 

@@ -28,7 +28,13 @@ public class UserService {
     }
 
     public void prepareAndSafe(User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        Optional<User> oldUserOpt = userRepository.findByEmail(user.getEmail());
+        if (user.getPassword().equals("passwordNotSet") &&
+                oldUserOpt.isPresent()) {
+            user.setPassword(oldUserOpt.get().getPassword());
+        } else {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
         userRepository.save(installRoles(user));
     }
 
