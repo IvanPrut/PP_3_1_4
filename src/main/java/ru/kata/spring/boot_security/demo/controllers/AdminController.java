@@ -13,12 +13,12 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/admin")
-public class APIAdminController {
+public class AdminController {
 
     private final UserRepository userRepository;
     private final UserService userService;
 
-    public APIAdminController(UserRepository userRepository, UserService userService) {
+    public AdminController(UserRepository userRepository, UserService userService) {
         this.userRepository = userRepository;
         this.userService = userService;
     }
